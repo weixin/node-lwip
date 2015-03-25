@@ -6,9 +6,9 @@
     "async": "~0.9.0",
     "decree": "0.0.6",
     "nan": "~1.4.1",
-    "lwip-decoder": "0.0.1",
-    "lwip-encoder": "0.0.1",
-    "lwip-image": "0.0.1",
+    "lwip-decoder": "~0.0.3",
+    "lwip-encoder": "~0.0.3",
+    "lwip-image": "~0.0.3",
     "node-pre-gyp": "0.6.4"
   },
   "scripts": {
