@@ -1,15 +1,15 @@
 {
   "name": "node-lwip",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "main": "index.js",
   "dependencies": {
     "async": "~0.9.0",
     "decree": "0.0.6",
-    "nan": "~1.4.1",
+    "nan": "~1.7.0",
     "lwip-decoder": "~0.0.3",
     "lwip-encoder": "~0.0.3",
     "lwip-image": "~0.0.3",
-    "node-pre-gyp": "0.6.4"
+    "node-pre-gyp": "git://github.com/willerce/node-pre-gyp"
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha --opts tests/mocha.opts tests",
