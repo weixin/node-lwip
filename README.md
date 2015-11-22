@@ -5,6 +5,8 @@
 
 # Light-weight image processor for NodeJS
 
+[![Join the chat at https://gitter.im/EyalAr/lwip](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/EyalAr/lwip?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 0. [Overview](#overview)
   0. [Installation](#installation)
   0. [Usage](#usage)
@@ -34,6 +36,7 @@
     0. [Opacify](#opacify)
     0. [Paste](#paste)
     0. [Set pixel](#set-pixel)
+    0. [Set metadata](#set-metadata)
   0. [Getters](#getters)
     0. [Width](#width)
     0. [Height](#height)
@@ -45,6 +48,7 @@
       0. [PNG](#png)
       0. [GIF](#gif)
     0. [Write to file](#write-to-file)
+    0. [Get metadata](#get-metadata)
   0. [Batch operations](#batch-operations)
 0. [Copyrights](#copyrights)
 
@@ -62,9 +66,9 @@ install anything else on your system.
 
 ### Installation
 
-`npm install node-lwip`
+`npm install lwip`
 
-Or, clone this repo and `cd node-lwip && npm install`.
+Or, clone this repo and `cd lwip && npm install`.
 
 You can run tests with `npm test`.
 
@@ -105,7 +109,7 @@ require('lwip').open('image.jpg', function(err, image){
 **Example (non-batch):**
 
 ```Javascript
-var lwip = require('node-lwip');
+var lwip = require('lwip');
 
 // obtain an image object:
 lwip.open('image.jpg', function(err, image){
@@ -230,7 +234,7 @@ Red values, then all the Green values, etc.
 #### Open file example
 
 ```Javascript
-var lwip = require('node-lwip');
+var lwip = require('lwip');
 lwip.open('path/to/image.jpg', function(err, image){
     // check 'err'. use 'image'.
     // image.resize(...), etc.
@@ -241,7 +245,7 @@ lwip.open('path/to/image.jpg', function(err, image){
 
 ```Javascript
 var fs = require('fs'),
-    lwip = require('node-lwip');
+    lwip = require('lwip');
 
 fs.readFile('path/to/image.png', function(err, buffer){
   // check err
@@ -266,7 +270,7 @@ fs.readFile('path/to/image.png', function(err, buffer){
 **Example**:
 
 ```Javascript
-var lwip = require('node-lwip');
+var lwip = require('lwip');
 
 lwip.create(500, 500, 'yellow', function(err, image){
   // check err
@@ -552,6 +556,17 @@ Set the color of a pixel.
 0. Extra caution is required when using this method in batch mode, as the
   dimensions of the image may change by the time this operation is called.
 
+#### Set metadata
+
+Set the metadata in an image. This is currently only supported for PNG files.
+Sets a tEXt chunk with the key `lwip_data` and comment as the given string. If
+called with a `null` parameter, removes existing metadata from the image,
+if present.
+
+`image.setMetadata(metadata)`
+
+0. `metadata {String}`: a string of arbitrary length, or null.
+
 ### Getters
 
 #### Width
@@ -682,6 +697,14 @@ Write encoded binary image data directly to a file.
    [Get as a Buffer](#get-as-a-buffer) section.
 0. `params {Object}`: **Optional** Format-specific parameters.
 0. `callback {Function(err)}`
+
+#### Get Metadata
+
+Get the textual metadata from an image. This is currently only supported for
+tEXt chunks in PNG images, and will get the first tEXt chunk found with the key
+`lwip_data`. If none is found, returns null.
+
+`image.getMetadata()`
 
 ### Batch operations
 
