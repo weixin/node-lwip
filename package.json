@@ -11,14 +11,14 @@
     "semver": "^5.0.3"
   },
   "binary": {
+    "module_name": "node-lwip",
     "module_path": "./build/{configuration}/",
     "remote_path": "./{node_abi}-v{version}-{platform}-{arch}/",
     "package_name": "{module_name}.node",
-    "host": "http://7xidbh.com1.z0.glb.clouddn.com"
+    "host": "7xov2q.dl1.z0.glb.clouddn.com"
   },
   "scripts": {
-    "postinstall": "node publish.js",
-    "publishbinary": "node-gyp rebuild && node publish.js",
+    "install": "node prebuild",
     "test": "./node_modules/.bin/mocha --opts tests/mocha.opts tests",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha -- --opts tests/mocha.opts tests",
     "travis": "./node_modules/.bin/istanbul cover --report lcovonly ./node_modules/.bin/_mocha -- --opts tests/mocha.opts --bail tests && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"

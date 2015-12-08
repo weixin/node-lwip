@@ -1,29 +1,60 @@
 # Fix line endings in Windows. (runs before repo cloning)
+#
+version: "{build}"
+
+os: Visual Studio 2015
+
 init:
   - git config --global core.autocrlf input
 
 environment:
+  TMTBUILD: true
+  qiniu_ACCESS_KEY:
+    secure: T10k13x11WzEOXvMqo8pXNK4fMb2+iSqj6ate+fhL7pwWxySeKhsoxjZ2GpAAsBU
+  qiniu_SECRET_KEY:
+    secure: XRWyQSCo7yWHH7LN5AUlFd3UYl/T6ZAc7WiK4NJJGAKocvmEm7ait8jm+y51CZ6c
   matrix:
-    - nodejs_version: "0.10"
-      msvs_version: 2013
-    - nodejs_version: "0.12"
-      msvs_version: 2013
-    - nodejs_version: "4.0"
-      msvs_version: 2013
-    - nodejs_version: "4.0"
-      msvs_version: 2015
-    - nodejs_version: "4.1"
-      msvs_version: 2013
-    - nodejs_version: "4.1"
-      msvs_version: 2015
+    - nodejs_version: 4.2.3
+      platform: x86
+      msvs_toolset: 12
+    - nodejs_version: 4.2.3
+      platform: x64
+      msvs_toolset: 12
+    - nodejs_version: 5.1.1
+      platform: x86
+      msvs_toolset: 12
+    - nodejs_version: 5.1.1
+      platform: x64
+      msvs_toolset: 12
 
 install:
-  - ps: Install-Product node $env:nodejs_version
-  - ps: npm install --msvs_version=$env:msvs_version
+  # add local node to path (since we install it for msvs_toolset == 14)
+  - SET PATH=%CD%;%PATH%;
+  # add local node-pre-gyp dir to path
+  - SET PATH=node_modules\.bin;%PATH%
+  # use 64 bit python if platform is 64 bit
+  - if "%PLATFORM%" == "x64" set PATH=C:\Python27-x64;%PATH%
+  - SET ARCHPATH=
+  - if %platform% == x64 (SET ARCHPATH=x64/)
+  # install node version per visual studio toolset
+  - if "%msvs_toolset%" == "12" powershell Install-Product node $env:nodejs_version $env:Platform
+  - if "%msvs_toolset%" == "14" powershell Write-Output "fetching https://mapbox.s3.amazonaws.com/node-cpp11/v$env:nodejs_version/${env:ARCHPATH}node.exe"
+  - if "%msvs_toolset%" == "14" powershell Start-FileDownload "https://mapbox.s3.amazonaws.com/node-cpp11/v$env:nodejs_version/${env:ARCHPATH}node.exe"
+  - node -v
+  - node -e "console.log(process.argv,process.execPath)"
+  - SET PATH=C:\Program Files (x86)\MSBuild\%msvs_toolset%.0\bin;%PATH%
+  - SET PATH=C:\Program Files (x86)\Microsoft Visual Studio %msvs_toolset%.0\VC\bin;%PATH%
+  - if %platform% == x64 CALL "C:\Program Files (x86)\Microsoft Visual Studio %msvs_toolset%.0\VC\vcvarsall.bat" amd64
+  - if %platform% == x86 CALL "C:\Program Files (x86)\Microsoft Visual Studio %msvs_toolset%.0\VC\vcvarsall.bat" amd64_x86
+  - npm install --msvs_version=2013 %TOOLSET_ARGS% --loglevel=http
+  - node -e "console.log(process.execPath)" > node_path.txt
+  - SET /p NODE_EXE_PATH=<node_path.txt
+  - del node_path.txt
+  # should display MSVCP140.dll if build with visual studio 2014 and /MD
+  - dumpbin /DEPENDENTS "%NODE_EXE_PATH%" || true
+  - dumpbin /DEPENDENTS "%MODULE%" || true
 
-test_script:
-  - ps: npm test
 
-build: off
-
-version: "{build}"
+build: OFF
+test: OFF
+deploy: OFF
