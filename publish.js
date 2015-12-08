@@ -3,9 +3,10 @@ var semver = require('semver');
 var url = require('url');
 var qiniu = require('qiniu');
 var pkg = require('./package.json');
-var config = require('rc')("qiniu");
+var config = require('rc')('qiniu');
 var http = require('http');
 var fs = require('fs');
+var exec = require('child_process').exec;
 
 var binaries = ["lwip_decoder", "lwip_encoder", "lwip_image"];
 var opts = [];
@@ -14,52 +15,103 @@ for (var i = 0; i < binaries.length; i++) {
     opts.push(evaluate(pkg, binaries[i]));
 }
 
-if (process.argv.indexOf("--build") > 0) {
-    //这边先编译
-
-    //准备上传
-    qiniu.conf.ACCESS_KEY = config['ACCESS_KEY'];
-    qiniu.conf.SECRET_KEY = config['SECRET_KEY'];
-
-    var uptoken = new qiniu.rs.PutPolicy('lwip').token();
-
-    for (var i = 0; i < opts.length; i++) {
-        uploadFile(opts[i].module, opts[i].hosted_tarball.replace(opts[i].host, ''), uptoken);
-    }
-
-    function uploadFile(localFile, key, uptoken) {
-        var extra = new qiniu.io.PutExtra();
-        qiniu.io.putFile(uptoken, key, localFile, extra, function (err, ret) {
-            if (!err) {
-                console.log('published to ', key)
-            } else {
-                console.log(err);
-            }
-        });
-    }
+if (process.env.TMTBUILD) {
+    publishNodeFile();
 } else {
+    downloadNodeFile();
+}
 
+function publishNodeFile() {
+
+    rebuild('node-gyp rebuild', function () {
+        //准备上传
+        qiniu.conf.ACCESS_KEY = config['ACCESS_KEY'];
+        qiniu.conf.SECRET_KEY = config['SECRET_KEY'];
+
+        var uptoken = new qiniu.rs.PutPolicy('node-lwip').token();
+
+        for (var i = 0; i < opts.length; i++) {
+            uploadFile(opts[i].module, opts[i].hosted_tarball.replace(opts[i].host, ''), uptoken);
+        }
+    });
+}
+
+function downloadNodeFile() {
     //创建目录
     mkdirs(path.join(__dirname, "build", "Release"), 0755, function (e) {
         //下载
-        for (var i = 0; i < opts.length; i++) {
-            downFile(opts[i].module, opts[i].hosted_tarball);
+        downFile(opts[0].module, opts[0].hosted_tarball, function (err) {
+            if (err) {
+                rebuild('node-gyp rebuild');
+            } else {
+                downFile(opts[1].module, opts[1].hosted_tarball, function (err) {
+                    if (err) {
+                        rebuild('node-gyp rebuild');
+                    } else {
+                        downFile(opts[2].module, opts[2].hosted_tarball, function (err) {
+                            if (err) {
+                                rebuild('node-gyp rebuild');
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+}
+
+function uploadFile(localFile, key, uptoken) {
+    var extra = new qiniu.io.PutExtra();
+    qiniu.io.putFile(uptoken, key, localFile, extra, function (err, ret) {
+        if (!err) {
+            console.log('published to ', key)
+        } else {
+            console.log(err);
         }
     });
+}
 
-    function downFile(localFilePath, remoteFilePath) {
-        var file = fs.createWriteStream(localFilePath);
-        http.get(remoteFilePath, function (response) {
+function downFile(localFilePath, remoteFilePath, callback) {
+    var file = fs.createWriteStream(localFilePath);
+    remoteFilePath = 'http://' + remoteFilePath;
+
+    http.get(remoteFilePath, function (response) {
+        if (response.statusCode !== 200) {
+            callback.apply(this, [true]);
+        } else {
             response.pipe(file);
             file.on('finish', function () {
-                console.log('下载完成', localFilePath)
+                console.log('下载完成', localFilePath);
+                callback.apply(this, [false]);
             });
-        }).on('error', function (err) {
-            fs.unlink(dest);
-            console.log('下载失败', localFilePath, err.message)
-        });
-    }
+        }
 
+    }).on('error', function (err) {
+        // fs.unlink(dest);
+        console.log('下载失败', localFilePath, err)
+
+        //下载失败则执行 node-gyp rebuild
+        callback.apply(this, [true]);
+    });
+}
+
+function rebuild(command, callback) {
+    var ls = exec(command, function (err, stdout, stderr) {
+        if (err) throw err;
+        callback && callback();
+    });
+
+    ls.stdout.on('data', function (data) {
+        console.log(data);
+    });
+
+    ls.stderr.on('data', function (data) {
+        console.log(data);
+    });
+
+    ls.on('exit', function (code) {
+        console.log('child process exited with code ' + code);
+    });
 }
 
 
@@ -281,3 +333,4 @@ function mkdirs(dirpath, mode, callback) {
         }
     });
 }
+
