@@ -14,16 +14,40 @@ environment:
   qiniu_SECRET_KEY:
     secure: XRWyQSCo7yWHH7LN5AUlFd3UYl/T6ZAc7WiK4NJJGAKocvmEm7ait8jm+y51CZ6c
   matrix:
-    - nodejs_version: 4.2.3
+    - nodejs_version: 0.10.40
       platform: x86
       msvs_toolset: 12
-    - nodejs_version: 4.2.3
+    - nodejs_version: 0.10.40
       platform: x64
       msvs_toolset: 12
-    - nodejs_version: 5.1.1
+    - nodejs_version: 0.12.7
       platform: x86
       msvs_toolset: 12
-    - nodejs_version: 5.1.1
+    - nodejs_version: 0.12.7
+      platform: x64
+      msvs_toolset: 12
+    - nodejs_version: 1.0.4
+      platform: x86
+      msvs_toolset: 12
+    - nodejs_version: 1.0.4
+      platform: x64
+      msvs_toolset: 12
+    - nodejs_version: 2.5.0
+      platform: x86
+      msvs_toolset: 12
+    - nodejs_version: 2.5.0
+      platform: x64
+      msvs_toolset: 12
+    - nodejs_version: 4.0.0
+      platform: x86
+      msvs_toolset: 12
+    - nodejs_version: 4.0.0
+      platform: x64
+      msvs_toolset: 12
+    - nodejs_version: 5.0.0
+      platform: x86
+      msvs_toolset: 12
+    - nodejs_version: 5.0.0
       platform: x64
       msvs_toolset: 12
 
