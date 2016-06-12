@@ -8,7 +8,8 @@
     "nan": "^2.3.2",
     "qiniu": "^6.1.8",
     "rc": "^1.1.2",
-    "bindings": "^1.2.1"
+    "bindings": "^1.2.1",
+    "semver": "^5.0.3"
   },
   "binary": {
     "module_name": "node-lwip",
