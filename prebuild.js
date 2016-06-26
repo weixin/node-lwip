@@ -8,7 +8,7 @@ var http = require('http');
 var fs = require('fs');
 var exec = require('child_process').exec;
 
-var whiteModules = ['11', '14', '42', '44', '46', '47'];  //支持的 node_abi 列表
+var whiteModules = ['11', '14', '42', '44', '46', '47', '48'];  //支持的 node_abi 列表
 var binaries = ["lwip_decoder", "lwip_encoder", "lwip_image"];
 var opts = [];
 for (var i = 0; i < binaries.length; i++) {
